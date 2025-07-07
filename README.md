@@ -1,43 +1,45 @@
 # LocalFiles MCP Server
 
-A simple Model Context Protocol (MCP) server that provides secure access to local files from specified directories.
+A Model Context Protocol (MCP) server that provides secure access to local files from specified directories.
 
 ## Features
 
-- 🔒 **Secure Access**: Only allows access to explicitly configured directories
-- 📁 **Directory Listing**: List all files in allowed directories with metadata
-- 📖 **File Reading**: Read file contents with automatic text/binary detection
-- ⚙️ **Configurable**: Easy configuration via environment variables or .env file
-- 🛡️ **Safety Features**: File size limits and extension filtering
+- List files in configured directories
+- Read file contents (text and binary)
+- File size and extension filtering
+- Secure path validation
+- Configuration via .env file or environment variables
 
-## Installation
+## Configuration
 
-1. Clone this repository:
-```bash
-git clone https://github.com/AliceLynxx/LocalFiles-MCP-Server.git
-cd LocalFiles-MCP-Server
-```
+### Method 1: .env file (Recommended)
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+Create a `.env` file in the same directory as `app.py`:
 
-3. Create configuration file:
-```bash
-cp .env.example .env
-```
-
-4. Edit `.env` file to configure your allowed directories:
 ```env
-ALLOWED_DIRECTORIES=/home/user/documents,/home/user/projects
+# Comma-separated list of allowed directories
+ALLOWED_DIRECTORIES=/home/user/documents,/home/user/projects,/path/to/your/files
+
+# Maximum file size in bytes (default: 10MB)
 MAX_FILE_SIZE=10485760
+
+# Allowed file extensions (comma-separated)
 ALLOWED_EXTENSIONS=.txt,.md,.py,.js,.json,.yaml,.yml,.csv,.xml,.html,.css
+```
+
+### Method 2: Environment Variables
+
+Set environment variables directly:
+
+```bash
+export ALLOWED_DIRECTORIES="/home/user/documents,/home/user/projects"
+export MAX_FILE_SIZE=10485760
+export ALLOWED_EXTENSIONS=".txt,.md,.py,.js,.json,.yaml,.yml,.csv,.xml,.html,.css"
 ```
 
 ## Usage
 
-### Running the Server
+### Start the server
 
 ```bash
 python app.py
@@ -45,96 +47,54 @@ python app.py
 
 ### Available Tools
 
-The MCP server provides three tools:
+1. **lf_list_files** - List files in allowed directories
+2. **lf_read_file** - Read contents of a specific file
+3. **lf_get_config** - Get current server configuration
 
-#### 1. `list_files`
-Lists all files in allowed directories or a specific directory.
+## Security
 
-**Parameters:**
-- `directory_path` (optional): Specific directory to list
+- Only files within configured `ALLOWED_DIRECTORIES` can be accessed
+- File size limits prevent reading overly large files
+- File extension filtering restricts access to specified file types
+- All paths are resolved and validated to prevent directory traversal attacks
 
-**Example:**
+## Troubleshooting
+
+### "No allowed directories configured" error
+
+This error occurs when:
+
+1. **No .env file exists** - Create a `.env` file with `ALLOWED_DIRECTORIES` setting
+2. **Empty ALLOWED_DIRECTORIES** - Ensure the value is not empty
+3. **Wrong working directory** - The server looks for `.env` in the script directory first, then current directory
+4. **Environment variables not set** - If not using .env, ensure environment variables are properly set
+
+### Debug configuration
+
+Use the `lf_get_config` tool to check what configuration the server is actually using:
+
 ```python
-# List all files in all allowed directories
-result = list_files()
-
-# List files in specific directory
-result = list_files("/path/to/specific/directory")
+# This will show the current configuration
+lf_get_config()
 ```
 
-#### 2. `read_file`
-Reads the contents of a specific file.
+## Example .env file
 
-**Parameters:**
-- `file_path`: Path to the file to read
-
-**Example:**
-```python
-result = read_file("/path/to/your/file.txt")
+```env
+# Example configuration for a development environment
+ALLOWED_DIRECTORIES=/home/alice/projects,/home/alice/documents,/tmp/safe-files
+MAX_FILE_SIZE=52428800
+ALLOWED_EXTENSIONS=.txt,.md,.py,.js,.json,.yaml,.yml,.csv,.xml,.html,.css,.log
 ```
 
-#### 3. `get_config`
-Returns current server configuration.
+## Requirements
 
-**Example:**
-```python
-config = get_config()
+- Python 3.7+
+- fastmcp library
+- pathlib (built-in)
+
+## Installation
+
+```bash
+pip install fastmcp
 ```
-
-## Configuration
-
-### Environment Variables
-
-- `ALLOWED_DIRECTORIES`: Comma-separated list of directories the server can access
-- `MAX_FILE_SIZE`: Maximum file size in bytes (default: 10MB)
-- `ALLOWED_EXTENSIONS`: Comma-separated list of allowed file extensions
-
-### Security Features
-
-- **Directory Restriction**: Only files within explicitly allowed directories can be accessed
-- **File Size Limits**: Prevents reading of excessively large files
-- **Extension Filtering**: Optionally restrict access to specific file types
-- **Path Traversal Protection**: Prevents access outside allowed directories
-
-## Example Response Formats
-
-### list_files Response
-```json
-{
-  "allowed_directories": ["/home/user/documents"],
-  "directories": [
-    {
-      "directory": "/home/user/documents",
-      "files": [
-        {
-          "name": "example.txt",
-          "path": "/home/user/documents/example.txt",
-          "relative_path": "example.txt",
-          "size": 1024,
-          "modified": 1704067200.0,
-          "extension": ".txt"
-        }
-      ],
-      "total_files": 1
-    }
-  ],
-  "total_directories": 1
-}
-```
-
-### read_file Response
-```json
-{
-  "file_path": "/home/user/documents/example.txt",
-  "name": "example.txt",
-  "size": 1024,
-  "modified": 1704067200.0,
-  "extension": ".txt",
-  "content_type": "text",
-  "content": "File contents here..."
-}
-```
-
-## License
-
-MIT License - see LICENSE file for details.
