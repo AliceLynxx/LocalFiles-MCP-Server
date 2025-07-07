@@ -23,9 +23,21 @@ def load_config() -> Dict[str, Any]:
         'allowed_extensions': ['.txt', '.md', '.py', '.js', '.json', '.yaml', '.yml', '.csv', '.xml', '.html', '.css']
     }
     
-    # Try to load from .env file
-    env_file = Path('.env')
-    if env_file.exists():
+    # Try to load from .env file - look in script directory first, then current directory
+    script_dir = Path(__file__).parent
+    env_paths = [
+        script_dir / '.env',  # Same directory as this script
+        Path('.env')          # Current working directory
+    ]
+    
+    env_file = None
+    for path in env_paths:
+        if path.exists():
+            env_file = path
+            break
+    
+    if env_file:
+        print(f"Loading config from: {env_file.absolute()}")
         with open(env_file, 'r') as f:
             for line in f:
                 line = line.strip()
@@ -42,10 +54,13 @@ def load_config() -> Dict[str, Any]:
                             config['max_file_size'] = int(value)
                         elif key == 'ALLOWED_EXTENSIONS':
                             config['allowed_extensions'] = [ext.strip() for ext in value.split(',') if ext.strip()]
+    else:
+        print("No .env file found in script directory or current directory")
     
     # Override with environment variables if present
     if os.getenv('ALLOWED_DIRECTORIES'):
         config['allowed_directories'] = [d.strip() for d in os.getenv('ALLOWED_DIRECTORIES').split(',') if d.strip()]
+        print(f"Using ALLOWED_DIRECTORIES from environment: {config['allowed_directories']}")
     
     if os.getenv('MAX_FILE_SIZE'):
         config['max_file_size'] = int(os.getenv('MAX_FILE_SIZE'))
