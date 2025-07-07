@@ -85,7 +85,7 @@ def is_path_allowed(file_path: str, config: Dict[str, Any]) -> bool:
     return False
 
 @mcp.tool()
-def list_files(directory_path: str = "") -> Dict[str, Any]:
+def lf_list_files(directory_path: str = "") -> Dict[str, Any]:
     """List all files in the specified directory or all allowed directories.
     
     Args:
@@ -154,7 +154,7 @@ def list_files(directory_path: str = "") -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def read_file(file_path: str) -> Dict[str, Any]:
+def lf_read_file(file_path: str) -> Dict[str, Any]:
     """Read the contents of a specific file.
     
     Args:
@@ -211,7 +211,7 @@ def read_file(file_path: str) -> Dict[str, Any]:
         return {"error": f"Error reading file: {str(e)}"}
 
 @mcp.tool()
-def get_config() -> Dict[str, Any]:
+def lf_get_config() -> Dict[str, Any]:
     """Get current server configuration.
     
     Returns:
